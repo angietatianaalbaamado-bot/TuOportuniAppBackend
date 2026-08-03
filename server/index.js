@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const pool = require("./db");
 
 const app = express();
 
@@ -69,8 +70,29 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/health", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW() AS fecha_actual");
+    res.json({
+      status: "ok",
+      db: "conectado",
+      fecha_servidor: result.rows[0].fecha_actual,
+    });
+  } catch (error) {
+    console.error("❌ Error conectando a PostgreSQL:", error.message);
+    res.status(500).json({ status: "error", db: "desconectado" });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
   console.log(`Documentacion Swagger: http://localhost:${PORT}/api-docs`);
+
+  try {
+    await pool.query("SELECT NOW()");
+    console.log("✅ PostgreSQL conectado correctamente");
+  } catch (error) {
+    console.error("❌ Error conectando a PostgreSQL:", error.message);
+  }
 });

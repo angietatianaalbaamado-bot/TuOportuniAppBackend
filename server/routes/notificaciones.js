@@ -17,6 +17,7 @@ const auth = require("../middleware/authMiddleware");
  */
 router.get("/", auth, async (req, res) => {
   const id_usuario = req.usuario.id_usuario;
+  console.log("id_usuario del token:", id_usuario);
   try {
     const result = await pool.query(
       "SELECT * FROM notificaciones WHERE id_usuario = $1 ORDER BY fecha DESC",
@@ -24,6 +25,7 @@ router.get("/", auth, async (req, res) => {
     );
     res.json(result.rows);
   } catch (error) {
+    console.error("Error en GET /notificaciones:", error);
     res.status(500).json({ mensaje: "Error al obtener notificaciones" });
   }
 });
@@ -45,16 +47,23 @@ router.get("/", auth, async (req, res) => {
  *     responses:
  *       200:
  *         description: Notificacion marcada como leida
+ *       404:
+ *         description: Notificacion no encontrada
  */
 router.put("/:id/leida", auth, async (req, res) => {
   const { id } = req.params;
+  const id_usuario = req.usuario.id_usuario;
   try {
     const result = await pool.query(
-      "UPDATE notificaciones SET leida = true WHERE id_notificacion = $1 RETURNING *",
-      [id],
+      "UPDATE notificaciones SET leida = true WHERE id_notificacion = $1 AND id_usuario = $2 RETURNING *",
+      [id, id_usuario],
     );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: "Notificación no encontrada" });
+    }
     res.json(result.rows[0]);
   } catch (error) {
+    console.error("Error en PUT /notificaciones/:id/leida:", error);
     res.status(500).json({ mensaje: "Error al actualizar notificacion" });
   }
 });
@@ -91,6 +100,7 @@ router.post("/", auth, async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
+    console.error("Error en POST /notificaciones:", error);
     res.status(500).json({ mensaje: "Error al crear notificacion" });
   }
 });

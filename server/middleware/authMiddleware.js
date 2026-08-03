@@ -9,6 +9,7 @@ module.exports = (req, res, next) => {
     req.usuario = decoded;
     next();
   } catch (error) {
+    console.error("Error verificando token:", error.name, "-", error.message);
     res.status(401).json({ mensaje: "Token inválido" });
   }
 };

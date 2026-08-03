@@ -39,6 +39,7 @@ router.post("/", auth, async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
+    console.error("Error en POST /chats:", error);
     res.status(500).json({ mensaje: "Error al crear chat" });
   }
 });
@@ -67,6 +68,7 @@ router.get("/", auth, async (req, res) => {
     );
     res.json(result.rows);
   } catch (error) {
+    console.error("Error en GET /chats:", error);
     res.status(500).json({ mensaje: "Error al obtener chats" });
   }
 });
@@ -110,6 +112,7 @@ router.post("/:id_chat/mensajes", auth, async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
+    console.error("Error en POST /mensajes:", error);
     res.status(500).json({ mensaje: "Error al enviar mensaje" });
   }
 });
@@ -141,6 +144,7 @@ router.get("/:id_chat/mensajes", auth, async (req, res) => {
     );
     res.json(result.rows);
   } catch (error) {
+    console.error("Error en GET /mensajes:", error);
     res.status(500).json({ mensaje: "Error al obtener mensajes" });
   }
 });
