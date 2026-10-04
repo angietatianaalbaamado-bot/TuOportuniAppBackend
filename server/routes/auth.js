@@ -54,15 +54,18 @@ router.post("/registro", async (req, res) => {
     );
     const nuevo = result.rows[0];
 
-    // Correo de bienvenida: si falla, el registro igual se completa
-    enviarCorreo(
-      nuevo.correo,
-      "¡Bienvenido a TuOportuniApp!",
-      `<h2>Hola ${escapar(nuevo.nombre)} 👋</h2>
-       <p>Tu cuenta fue creada con éxito. Ya puedes buscar oportunidades.</p>`,
-    ).catch((e) =>
-      console.error("No se pudo enviar el correo de bienvenida:", e.message),
-    );
+    // Correo de bienvenida: se espera a que salga antes de responder
+    // (necesario en Vercel). Si falla, el registro igual se completa.
+    try {
+      await enviarCorreo(
+        nuevo.correo,
+        "¡Bienvenido a TuOportuniApp!",
+        `<h2>Hola ${escapar(nuevo.nombre)} 👋</h2>
+         <p>Tu cuenta fue creada con éxito. Ya puedes buscar oportunidades.</p>`,
+      );
+    } catch (e) {
+      console.error("No se pudo enviar el correo de bienvenida:", e.message);
+    }
 
     res.status(201).json({
       mensaje: "Usuario registrado",
