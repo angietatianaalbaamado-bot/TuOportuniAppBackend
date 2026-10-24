@@ -1,1 +1,0 @@
-(echo DB_HOST=localhost && echo DB_USER=postgres && echo DB_PASSWORD=Tatiana123 && echo DB_NAME=tuoportuniapp && echo DB_PORT=5432 && echo PORT=3000 && echo JWT_SECRET=tuoportuniapp_secret_2024 && echo DATABASE_URL=postgresql://neondb_owner:npg_SkeWVqc6Bw4a@ep-shiny-poetry-aqhvwrk8-pooler.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require) > .env
