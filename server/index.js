@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -7,6 +8,7 @@ const pool = require("./db");
 
 const app = express();
 
+// Configuración general
 app.use(cors());
 app.use(express.json());
 
@@ -14,6 +16,7 @@ app.use(express.json());
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
+
     info: {
       title: "TuOportuniApp API",
       version: "1.0.0",
@@ -24,12 +27,18 @@ const swaggerOptions = {
         email: "angie@tuoportuniapp.com",
       },
     },
+
     servers: [
+      {
+        url: "https://tuoportuniappbackend.onrender.com",
+        description: "Servidor de producción (Render)",
+      },
       {
         url: "http://localhost:3000",
         description: "Servidor local",
       },
     ],
+
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -39,12 +48,21 @@ const swaggerOptions = {
         },
       },
     },
-    security: [{ bearerAuth: [] }],
+
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
+
   apis: ["./server/routes/*.js"],
 };
 
+// Generar documentación Swagger
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
+
+// Publicar documentación
 app.use(
   "/api-docs",
   swaggerUi.serve,
@@ -54,7 +72,7 @@ app.use(
   }),
 );
 
-// Rutas
+// Rutas de la aplicación
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/vacantes", require("./routes/vacantes"));
 app.use("/api/postulaciones", require("./routes/postulaciones"));
@@ -63,16 +81,19 @@ app.use("/api/notificaciones", require("./routes/notificaciones"));
 app.use("/api/entrevistas", require("./routes/entrevistas"));
 app.use("/api/perfil", require("./routes/perfil"));
 
+// Ruta principal
 app.get("/", (req, res) => {
   res.json({
     mensaje: "TuOportuniApp Backend corriendo ✅",
-    documentacion: "http://localhost:3000/api-docs",
+    documentacion: `${req.protocol}://${req.get("host")}/api-docs`,
   });
 });
 
+// Ruta para comprobar el estado del servidor y PostgreSQL
 app.get("/health", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW() AS fecha_actual");
+
     res.json({
       status: "ok",
       db: "conectado",
@@ -80,14 +101,20 @@ app.get("/health", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error conectando a PostgreSQL:", error.message);
-    res.status(500).json({ status: "error", db: "desconectado" });
+
+    res.status(500).json({
+      status: "error",
+      db: "desconectado",
+    });
   }
 });
 
+// Iniciar servidor
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, async () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`Documentacion Swagger: http://localhost:${PORT}/api-docs`);
+  console.log(`Servidor iniciado en el puerto ${PORT}`);
+  console.log(`Documentación Swagger: /api-docs`);
 
   try {
     await pool.query("SELECT NOW()");
